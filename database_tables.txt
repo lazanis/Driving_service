@@ -5,6 +5,10 @@ https://stackoverflow.com/questions/11530196/flask-sqlalchemy-query-specify-colu
 https://www.kite.com/python/answers/how-to-encrypt-a-password-in-python?fbclid=IwAR0YIO1iDpm8dLprJtOEInVOCVxaKoceLBOEHhxa9-OOEXeJy3RM3N2U0No - password encode
 https://stackoverflow.com/questions/17325006/how-to-create-a-foreignkey-reference-with-sqlalchemy - foreign keys
 
+# QUERIES
+SELECT name, surname, type, seats FROM
+USERS LEFT JOIN CARS ON USERS.id=CARS.user_id;
+
 
 # TABLES
 Create table USERS
