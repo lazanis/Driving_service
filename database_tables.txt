@@ -1,0 +1,11 @@
+Create table USER
+(
+    id varchar(50) primary key,
+    name varchar(50),
+    surname varchar(50),
+    role varchar(10),
+    date_of_birth bigint,
+    username varchar(50),
+    pwd varchar(50),
+    email varchar(50)
+)
