@@ -4,16 +4,35 @@ from uuid import uuid4
 import sqlalchemy as sql
 from typing import Dict, Union
 
+from sqlalchemy import select
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html
+
 metadata_obj = sql.MetaData()
-users = sql.Table('USERS', metadata_obj,
-                  sql.Column('id', sql.String, primary_key=True, default=uuid4),
-                  sql.Column('name', sql.String),
-                  sql.Column('surname', sql.String),
-                  sql.Column('role', sql.String),
-                  sql.Column('date_of_birth', sql.BIGINT),
-                  sql.Column('username', sql.String),
-                  sql.Column('pwd', sql.String),
-                  sql.Column('email', sql.String))
+user = sql.Table('USERS', metadata_obj,
+                 sql.Column('id', sql.String, primary_key=True, default=uuid4),
+                 sql.Column('name', sql.String),
+                 sql.Column('surname', sql.String),
+                 sql.Column('role', sql.String),
+                 sql.Column('date_of_birth', sql.BIGINT),
+                 sql.Column('username', sql.String),
+                 sql.Column('pwd', sql.String),
+                 sql.Column('email', sql.String))
+
+Base = declarative_base()
+
+
+class User(Base):
+    __tablename__ = 'USERS'
+    id = sql.Column(sql.String, primary_key=True, default=uuid4)
+    name = sql.Column(sql.String)
+    surname = sql.Column(sql.String)
+    role = sql.Column(sql.String)
+    date_of_birth = sql.Column(sql.BIGINT)
+    username = sql.Column(sql.String)
+    pwd = sql.Column(sql.String)
+    email = sql.Column(sql.String)
 
 
 class DBWorker(object):
@@ -37,7 +56,7 @@ class DBWorker(object):
             # filter column
             column = sql.column('username')
             # get columns
-            query = users.select().with_only_columns(users.columns.id)
+            query = user.select().with_only_columns(user.columns.id)
             query = query.where(column == username)
             rows = connection.execute(query)
             no_rows = rows.rowcount
@@ -54,7 +73,7 @@ class DBWorker(object):
         try:
             engine = sql.create_engine(self.connection_str)
             connection = engine.connect()
-            query = users.insert()
+            query = user.insert()
             new_id = str(uuid4())
             user_pwd = user_dict.get('pwd')
             user_pwd = user_pwd.encode('utf-8')
@@ -74,4 +93,19 @@ class DBWorker(object):
             return_message = f'error: {e}'
         finally:
             return return_val, return_message
+
+    def get_all_users(self):
+        engine = sql.create_engine(self.connection_str)
+        connection = engine.connect()
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        query = select(User)
+        rez = session.execute(query)
+        users = rez.scalars().all()
+        for u in users:
+            print(u)
+        x = 5
+        session.close()
     # endregion

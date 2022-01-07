@@ -32,4 +32,5 @@ def login(request: Request):
     ret_dict = {'unique_id': None, 'message': None}
 
     request_args = dict(request.query_params)
+    db_worker.get_all_users()
     return 200
