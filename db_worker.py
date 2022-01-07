@@ -1,38 +1,10 @@
 import base64
-import pandas as pd
 from uuid import uuid4
 import sqlalchemy as sql
+from data_classes import User
 from typing import Dict, Union
-
-from sqlalchemy import select
-from sqlalchemy.orm import declarative_base, sessionmaker
-
-# https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html
-
-metadata_obj = sql.MetaData()
-user = sql.Table('USERS', metadata_obj,
-                 sql.Column('id', sql.String, primary_key=True, default=uuid4),
-                 sql.Column('name', sql.String),
-                 sql.Column('surname', sql.String),
-                 sql.Column('role', sql.String),
-                 sql.Column('date_of_birth', sql.BIGINT),
-                 sql.Column('username', sql.String),
-                 sql.Column('pwd', sql.String),
-                 sql.Column('email', sql.String))
-
-Base = declarative_base()
-
-
-class User(Base):
-    __tablename__ = 'USERS'
-    id = sql.Column(sql.String, primary_key=True, default=uuid4)
-    name = sql.Column(sql.String)
-    surname = sql.Column(sql.String)
-    role = sql.Column(sql.String)
-    date_of_birth = sql.Column(sql.BIGINT)
-    username = sql.Column(sql.String)
-    pwd = sql.Column(sql.String)
-    email = sql.Column(sql.String)
+from sqlalchemy import select, and_
+from sqlalchemy.orm import sessionmaker
 
 
 class DBWorker(object):
@@ -49,21 +21,41 @@ class DBWorker(object):
         return_val = None
         try:
             engine = sql.create_engine(self.connection_str)
-            connection = engine.connect()
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = select(User).where(User.username == username)
+            rez = session.execute(query)
+            users = rez.scalars().all()
+            no_rows = len(users)
+            if no_rows == 1:
+                return_val = users[0].id
+
+            session.close()
         except Exception as e:
             print(f'Checking if user exists by username failed with error: {e}')
-        else:
-            # filter column
-            column = sql.column('username')
-            # get columns
-            query = user.select().with_only_columns(user.columns.id)
-            query = query.where(column == username)
-            rows = connection.execute(query)
-            no_rows = rows.rowcount
+        finally:
+            return return_val
+
+    def check_if_user_exists_by_username_and_pwd(self, username: str, pwd: str):
+        return_val = None
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+            pwd_search = pwd.encode('utf-8')
+            pwd_search = base64.b64encode(pwd_search)
+
+            query = select(User).where(and_(User.username == username, User.pwd == pwd_search))
+            rez = session.execute(query)
+            users = rez.scalars().all()
+            no_rows = len(users)
             if no_rows == 1:
-                rez_df = pd.DataFrame.from_records(rows, columns=rows.keys())
-                return_val = rez_df.at[0, 'id']
-            connection.close()
+                return_val = users[0].id
+
+            session.close()
+        except Exception as e:
+            print(f'Checking if user exists by username failed with error: {e}')
         finally:
             return return_val
 
@@ -71,22 +63,30 @@ class DBWorker(object):
         return_val = None
         return_message = 'success'
         try:
-            engine = sql.create_engine(self.connection_str)
-            connection = engine.connect()
-            query = user.insert()
             new_id = str(uuid4())
             user_pwd = user_dict.get('pwd')
             user_pwd = user_pwd.encode('utf-8')
             user_pwd = base64.b64encode(user_pwd)
+            user_dob = int(user_dict['date_of_birth'])
+            new_user = User()
+            new_user.id = new_id
+            new_user.name = user_dict.get('name')
+            new_user.surname = user_dict.get('surname')
+            new_user.role = user_dict.get('role')
+            new_user.date_of_birth = user_dob
+            new_user.username = user_dict.get('username')
+            new_user.pwd = user_pwd
+            new_user.email = user_dict.get('email')
 
-            user_dict['id'] = new_id
-            user_dict['pwd'] = user_pwd
-            user_dict['date_of_birth'] = int(user_dict['date_of_birth'])
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
 
-            query = query.values(user_dict)
+            session.add(new_user)
+            session.commit()
 
-            connection.execute(query)
-            connection.close()
+            session.close()
+
             return_val = new_id
         except Exception as e:
             print(f'Checking if user exists by username failed with error: {e}')
@@ -95,9 +95,8 @@ class DBWorker(object):
             return return_val, return_message
 
     def get_all_users(self):
+        # TODO: COMPLETE
         engine = sql.create_engine(self.connection_str)
-        connection = engine.connect()
-
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -106,6 +105,6 @@ class DBWorker(object):
         users = rez.scalars().all()
         for u in users:
             print(u)
-        x = 5
+
         session.close()
     # endregion

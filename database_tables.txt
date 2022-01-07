@@ -1,4 +1,12 @@
-Create table USER
+# USEFUL LINKS
+https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html
+https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#the-class-to-be-mapped
+https://stackoverflow.com/questions/11530196/flask-sqlalchemy-query-specify-column-names - get specific columns from database
+https://www.kite.com/python/answers/how-to-encrypt-a-password-in-python?fbclid=IwAR0YIO1iDpm8dLprJtOEInVOCVxaKoceLBOEHhxa9-OOEXeJy3RM3N2U0No - password encode
+
+
+# TABLES
+Create table USERS
 (
     id varchar(50) primary key,
     name varchar(50),
