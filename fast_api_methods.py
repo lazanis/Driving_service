@@ -32,12 +32,28 @@ def login(request: Request):
     ret_dict = {'unique_id': None, 'message': None}
 
     request_args = dict(request.query_params)
-    ret_val = db_worker.check_if_user_exists_by_username_and_pwd(request_args.get('username'), request_args.get('pwd'))
+    ret_val, ret_role = db_worker.check_if_user_exists_by_username_and_pwd(request_args.get('username'), request_args.get('pwd'))
     if ret_val is not None:
         ret_dict['unique_id'] = ret_val
-        ret_dict['message'] = f'Successful login for user {ret_val}'
+        ret_dict['message'] = f'Successful login for user {ret_val} with role {ret_role}'
     else:
         ret_dict['unique_id'] = -1
         ret_dict['message'] = f'Unable to login as username and/or password are wrong'
+
+    return ret_dict
+
+
+@app.post('/add_new_car')
+def add_new_car(request: Request):
+    ret_dict = {'unique_id': None, 'message': None}
+
+    request_args = dict(request.query_params)
+    ret_val, return_message = db_worker.write_new_car(request_args)
+    if ret_val is not None:
+        ret_dict['unique_id'] = ret_val
+        ret_dict['message'] = f"Successful car addition with id {ret_val} for user {request_args.get('user_id')}"
+    else:
+        ret_dict['unique_id'] = -1
+        ret_dict['message'] = f'Unable to add new car for user'
 
     return ret_dict

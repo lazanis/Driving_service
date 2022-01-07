@@ -1,8 +1,8 @@
 import base64
 from uuid import uuid4
 import sqlalchemy as sql
-from data_classes import User
 from typing import Dict, Union
+from data_classes import User, Car
 from sqlalchemy import select, and_
 from sqlalchemy.orm import sessionmaker
 
@@ -39,6 +39,7 @@ class DBWorker(object):
 
     def check_if_user_exists_by_username_and_pwd(self, username: str, pwd: str):
         return_val = None
+        return_role = None
         try:
             engine = sql.create_engine(self.connection_str)
             Session = sessionmaker(bind=engine)
@@ -52,12 +53,13 @@ class DBWorker(object):
             no_rows = len(users)
             if no_rows == 1:
                 return_val = users[0].id
+                return_role = users[0].role
 
             session.close()
         except Exception as e:
             print(f'Checking if user exists by username failed with error: {e}')
         finally:
-            return return_val
+            return return_val, return_role
 
     def write_new_user(self, user_dict: Dict[str, Union[int, str, bytes]]):
         return_val = None
@@ -107,4 +109,33 @@ class DBWorker(object):
             print(u)
 
         session.close()
+    # endregion
+
+    # region Car
+    def write_new_car(self, car_arguments: Dict[str, Union[str, int]]):
+        return_val = None
+        return_message = 'success'
+        try:
+            new_id = str(uuid4())
+            new_car = Car()
+            new_car.id = new_id
+            new_car.user_id = car_arguments.get('user_id')
+            new_car.seats = car_arguments.get('seats')
+            new_car.type = car_arguments.get('type')
+
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            session.add(new_car)
+            session.commit()
+
+            session.close()
+
+            return_val = new_id
+        except Exception as e:
+            print(f'Checking if user exists by username failed with error: {e}')
+            return_message = f'error: {e}'
+        finally:
+            return return_val, return_message
     # endregion
