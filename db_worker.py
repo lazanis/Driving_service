@@ -2,9 +2,9 @@ import base64
 from uuid import uuid4
 import sqlalchemy as sql
 from typing import Dict, Union
-from data_classes import User, Car
 from sqlalchemy import select, and_
 from sqlalchemy.orm import sessionmaker
+from data_classes import User, Car, Offer
 
 
 class DBWorker(object):
@@ -134,7 +134,56 @@ class DBWorker(object):
 
             return_val = new_id
         except Exception as e:
-            print(f'Checking if user exists by username failed with error: {e}')
+            print(f"New car addition for user {car_arguments.get('user_id')} failed with error: {e}")
+            return_message = f'error: {e}'
+        finally:
+            return return_val, return_message
+
+    def get_all_cars_for_user(self, user_id: str):
+        return_val = None
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = select(Car).where(Car.user_id == user_id)
+            rez = session.execute(query)
+            cars = rez.scalars().all()
+            return_val = cars
+
+            session.close()
+        except Exception as e:
+            print(f'While obtaining cars for user {user_id} following error occurred: {e}')
+        finally:
+            return return_val
+    # endregion
+
+    # region Offer
+    def add_new_offer(self, offer_args: Dict[str, Union[str, int]]):
+        return_val = None
+        return_message = 'success'
+        try:
+            new_id = str(uuid4())
+            new_offer = Offer()
+            new_offer.id = new_id
+            new_offer.drive_from = offer_args.get('drive_from')
+            new_offer.drive_to = offer_args.get('drive_to')
+            new_offer.drive_date = int(offer_args.get('drive_date'))
+            new_offer.user_id = offer_args.get('user_id')
+            new_offer.request_type = offer_args.get('request_type')
+            new_offer.car_id = offer_args.get('car_id')
+
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            session.add(new_offer)
+            session.commit()
+
+            session.close()
+            return_val = new_id
+        except Exception as e:
+            print(f"New car addition for user {offer_args.get('user_id')} failed with error: {e}")
             return_message = f'error: {e}'
         finally:
             return return_val, return_message

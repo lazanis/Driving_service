@@ -9,6 +9,12 @@ https://stackoverflow.com/questions/17325006/how-to-create-a-foreignkey-referenc
 SELECT name, surname, type, seats FROM
 USERS LEFT JOIN CARS ON USERS.id=CARS.user_id;
 
+select OFFERS.id as offer_id, drive_from, drive_to, drive_date, OFFERS.user_id, type, seats FROM
+OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id;
+
+select offer_id, drive_from, drive_to, drive_date, type, seats, name, surname, role, date_of_birth, username, email from
+(select OFFERS.id as offer_id, drive_from, drive_to, drive_date, OFFERS.user_id, type, seats FROM
+OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id) as OFFER_CAR LEFT JOIN USERS ON OFFER_CAR.user_id = USERS.id;
 
 # TABLES
 Create table USERS
@@ -30,4 +36,17 @@ Create table CARS
     seats int,
     type varchar(50),
     foreign key (user_id) references USERS(id)
+)
+
+Create table OFFERS
+(
+    id varchar(50) primary key,
+    drive_from varchar(50),
+    drive_to varchar(50),
+    drive_date bigint,
+    user_id varchar(50),
+    car_id varchar(50),
+    request_type varchar(10),
+    foreign key (user_id) references USERS(id),
+    foreign key (car_id) references CARS(id)
 )

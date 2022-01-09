@@ -57,3 +57,34 @@ def add_new_car(request: Request):
         ret_dict['message'] = f'Unable to add new car for user'
 
     return ret_dict
+
+
+@app.get('/get_all_cars_for_user')
+def get_all_cars_for_user(request: Request):
+    ret_dict = {'cars_number': None, 'cars': None}
+
+    request_args = dict(request.query_params)
+    ret_val = db_worker.get_all_cars_for_user(request_args.get('user_id'))
+    if ret_val is not None:
+        ret_dict['cars_number'] = len(ret_val)
+    else:
+        ret_dict['cars_number'] = -1
+    ret_dict['cars'] = ret_val
+
+    return ret_dict
+
+
+@app.post('/add_new_offer')
+def add_new_offer(request: Request):
+    ret_dict = {'unique_id': None, 'message': None}
+
+    request_args = dict(request.query_params)
+    ret_val, return_message = db_worker.add_new_offer(request_args)
+    if ret_val is not None:
+        ret_dict['unique_id'] = ret_val
+        ret_dict['message'] = f"Successful offer addition with id {ret_val} for user {request_args.get('user_id')}"
+    else:
+        ret_dict['unique_id'] = -1
+        ret_dict['message'] = f'Unable to add new offer for user'
+
+    return ret_dict
