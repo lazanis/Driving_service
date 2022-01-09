@@ -34,3 +34,11 @@ class Offer(Base):
     user_id = sql.Column(sql.String, sql.ForeignKey('USERS.id', ondelete='CASCADE'), nullable=False)
     request_type = sql.Column(sql.String)
     car_id = sql.Column(sql.String, sql.ForeignKey('CARS.id', ondelete='CASCADE'), nullable=False)
+
+
+class Drive(Base):
+    __tablename__ = 'DRIVES'
+    id = sql.Column(sql.String, primary_key=True, default=uuid4)
+    offer_id = sql.Column(sql.String, sql.ForeignKey('OFFERS.id', ondelete='CASCADE'), nullable=False)
+    passenger_id = sql.Column(sql.String, sql.ForeignKey('USERS.id', ondelete='CASCADE'), nullable=False)
+    reservation_date = sql.Column(sql.BIGINT)

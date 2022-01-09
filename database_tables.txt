@@ -4,6 +4,7 @@ https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#the-class-to-be-mapped
 https://stackoverflow.com/questions/11530196/flask-sqlalchemy-query-specify-column-names - get specific columns from database
 https://www.kite.com/python/answers/how-to-encrypt-a-password-in-python?fbclid=IwAR0YIO1iDpm8dLprJtOEInVOCVxaKoceLBOEHhxa9-OOEXeJy3RM3N2U0No - password encode
 https://stackoverflow.com/questions/17325006/how-to-create-a-foreignkey-reference-with-sqlalchemy - foreign keys
+https://chartio.com/resources/tutorials/how-to-execute-raw-sql-in-sqlalchemy/?fbclid=IwAR1_fE_SBEsNcViThe6ts-hcWhWNmLvfaBbSDikHUz31de2Et2VhqAYwBws - raw sql in sqlalchemy
 
 # QUERIES
 SELECT name, surname, type, seats FROM
@@ -15,6 +16,9 @@ OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id;
 select offer_id, drive_from, drive_to, drive_date, type, seats, name, surname, role, date_of_birth, username, email from
 (select OFFERS.id as offer_id, drive_from, drive_to, drive_date, OFFERS.user_id, type, seats FROM
 OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id) as OFFER_CAR LEFT JOIN USERS ON OFFER_CAR.user_id = USERS.id;
+
+select count(*) from DRIVES where offer_id='7f822953-9c1c-430a-9b57-37edbacccabf'
+SELECT seats from OFFERS inner JOIN CARS on OFFERS.car_id=CARS.id where OFFERS.id='7f822953-9c1c-430a-9b57-37edbacccabf';
 
 # TABLES
 Create table USERS
@@ -49,4 +53,14 @@ Create table OFFERS
     request_type varchar(10),
     foreign key (user_id) references USERS(id),
     foreign key (car_id) references CARS(id)
+)
+
+create table DRIVES
+(
+    id varchar(50) primary key,
+    offer_id varchar(50),
+    passenger_id varchar(50),
+    reservation_date bigint,
+    FOREIGN KEY (offer_id) REFERENCES OFFERS(id),
+    FOREIGN KEY (passenger_id) REFERENCES USERS(id)
 )

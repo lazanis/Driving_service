@@ -1,10 +1,12 @@
 import base64
+import pandas as pd
 from uuid import uuid4
 import sqlalchemy as sql
+from datetime import datetime
 from typing import Dict, Union
 from sqlalchemy import select, and_
 from sqlalchemy.orm import sessionmaker
-from data_classes import User, Car, Offer
+from data_classes import User, Car, Offer, Drive
 
 
 class DBWorker(object):
@@ -187,4 +189,110 @@ class DBWorker(object):
             return_message = f'error: {e}'
         finally:
             return return_val, return_message
+    # endregion
+
+    # region Drive
+    def get_number_of_drive_reservations_by_id(self, reservation_id: str):
+        return_val = None
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = select(Drive).where(Drive.offer_id == reservation_id)
+            rez = session.execute(query)
+            reservations = rez.scalars().all()
+
+            session.close()
+            return_val = len(reservations)
+        except Exception as e:
+            print(f'Unable to read number of reservations for id {reservation_id} for reason {e}')
+        finally:
+            return return_val
+
+    def make_drive_request(self, passenger_id: str, offer_id: str):
+        return_val = None
+        number_of_existing_reservations = self.get_number_of_drive_reservations_by_id(offer_id)
+        car_seats_for_offer = self.get_car_seats_for_offer(offer_id)
+        free_seats_left = car_seats_for_offer - 1 - number_of_existing_reservations
+        if free_seats_left > 0:
+            return_val, return_message = self.add_new_drive(passenger_id, offer_id)
+        else:
+            return_message = f'Unable to make driving request for passenger {passenger_id} as no free spaces left for offer {offer_id}'
+
+        return return_val, return_message
+    # endregion
+
+    # region Drive
+    def add_new_drive(self, passenger_id: str, offer_id: str):
+        return_val = None
+        return_message = 'success'
+        try:
+            new_id = str(uuid4())
+            new_drive = Drive()
+            new_drive.id = new_id
+            new_drive.offer_id = offer_id
+            new_drive.passenger_id = passenger_id
+            new_drive.reservation_date = int(datetime.timestamp(datetime.now()) * 1000)
+
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            session.add(new_drive)
+            session.commit()
+
+            session.close()
+            return_val = new_id
+        except Exception as e:
+            print(f"New drive addition for passenger {passenger_id} and offer {offer_id} failed with error: {e}")
+            return_message = f'error: {e}'
+        finally:
+            return return_val, return_message
+    # endregion
+
+    # region Complex search
+    def get_offers_for_drive_request(self, request_args: Dict[str, Union[str, int]]):
+        return_val = None
+        drive_from = request_args.get('drive_from')
+        drive_to = request_args.get('drive_to')
+        drive_date = int(request_args.get('drive_date'))
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = "select offer_id, drive_from, drive_to, drive_date, type, seats, name, surname, role, date_of_birth, username, email from " \
+                    "(select OFFERS.id as offer_id, drive_from, drive_to, drive_date, OFFERS.user_id, type, seats FROM " \
+                    "OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id) as OFFER_CAR LEFT JOIN USERS ON OFFER_CAR.user_id = USERS.id " \
+                    f"where drive_from='{drive_from}' and drive_to='{drive_to}' and drive_date>{drive_date}"
+            rows = session.execute(query)
+            no_rows = rows.rowcount
+            if no_rows > 0:
+                rez_df = pd.DataFrame.from_records(rows, columns=rows.keys())
+            else:
+                rez_df = pd.DataFrame()
+            return_val = rez_df
+        except Exception as e:
+            print(f"Getting offers for specified requirements failed with error {e}")
+        finally:
+            return return_val
+
+    def get_car_seats_for_offer(self, offer_id: str):
+        return_val = None
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = f"SELECT seats from OFFERS inner JOIN CARS on OFFERS.car_id=CARS.id where OFFERS.id='{offer_id}'"
+            rows = session.execute(query)
+            no_rows = rows.rowcount
+            if no_rows == 1:
+                rez_df = pd.DataFrame.from_records(rows, columns=rows.keys())
+                return_val = rez_df.at[0, 'seats']
+        except Exception as e:
+            print(f"Getting number of car seats for offer {offer_id} failed with error {e}")
+        finally:
+            return return_val
     # endregion

@@ -88,3 +88,35 @@ def add_new_offer(request: Request):
         ret_dict['message'] = f'Unable to add new offer for user'
 
     return ret_dict
+
+
+@app.get('/get_driving_offers')
+def make_driving_reservation(request: Request):
+    ret_dict = {'offers_number': None, 'offers': None}
+
+    request_args = dict(request.query_params)
+    ret_val = db_worker.get_offers_for_drive_request(request_args)
+    if ret_val is not None:
+        ret_dict['offers_number'] = len(ret_val)
+        ret_dict['offers'] = ret_val.to_dict(orient='index')
+    else:
+        ret_dict['offers_number'] = -1
+        ret_dict['offers'] = dict()
+
+    return ret_dict
+
+
+@app.post('/make_driving_reservation')
+def make_driving_reservation(request: Request):
+    ret_dict = {'unique_id': None, 'message': None}
+
+    request_args = dict(request.query_params)
+    ret_val, return_message = db_worker.make_drive_request(request_args.get('passenger_id'), request_args.get('offer_id'))
+    if ret_val is not None:
+        ret_dict['unique_id'] = ret_val
+        ret_dict['message'] = f"Successful drive request made for offer {request_args.get('offer_id')}"
+    else:
+        ret_dict['unique_id'] = -1
+        ret_dict['message'] = f'Unable to add new drive request'
+
+    return ret_dict
