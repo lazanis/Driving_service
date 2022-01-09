@@ -120,3 +120,35 @@ def make_driving_reservation(request: Request):
         ret_dict['message'] = f'Unable to add new drive request'
 
     return ret_dict
+
+
+@app.get('/get_past_drives')
+def get_past_drives(request: Request):
+    ret_dict = {'past_drives_number': None, 'past_drives': None}
+
+    request_args = dict(request.query_params)
+    user_id = request_args.get('user_id')
+    ret_val = db_worker.get_past_drives_for_user(user_id)
+    if ret_val is not None:
+        ret_dict['past_drives_number'] = len(ret_val)
+    else:
+        ret_dict['past_drives_number'] = -1
+    ret_dict['past_drives'] = ret_val.to_dict(orient='index')
+
+    return ret_dict
+
+
+@app.post('/add_review')
+def add_review(request: Request):
+    ret_dict = {'unique_id': None, 'message': None}
+
+    request_args = dict(request.query_params)
+    ret_val, return_message = db_worker.add_new_review(request_args)
+    if ret_val is not None:
+        ret_dict['unique_id'] = ret_val
+        ret_dict['message'] = f"Successful review addition with id {ret_val} from user {request_args.get('user_id')}"
+    else:
+        ret_dict['unique_id'] = -1
+        ret_dict['message'] = f'Unable to add new offer for user'
+
+    return ret_dict

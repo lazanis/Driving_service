@@ -42,3 +42,13 @@ class Drive(Base):
     offer_id = sql.Column(sql.String, sql.ForeignKey('OFFERS.id', ondelete='CASCADE'), nullable=False)
     passenger_id = sql.Column(sql.String, sql.ForeignKey('USERS.id', ondelete='CASCADE'), nullable=False)
     reservation_date = sql.Column(sql.BIGINT)
+
+
+class Review(Base):
+    __tablename__ = 'REVIEWS'
+    id = sql.Column(sql.String, primary_key=True, default=uuid4)
+    from_user_id = sql.Column(sql.String, sql.ForeignKey('USERS.id', ondelete='CASCADE'), nullable=False)
+    to_user_id = sql.Column(sql.String, sql.ForeignKey('USERS.id', ondelete='CASCADE'), nullable=False)
+    drive_id = sql.Column(sql.String, sql.ForeignKey('DRIVES.id', ondelete='CASCADE'), nullable=False)
+    review_date = sql.Column(sql.BIGINT)
+    review_grade = sql.Column(sql.INT)

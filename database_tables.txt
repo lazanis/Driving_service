@@ -20,6 +20,9 @@ OFFERS LEFT JOIN CARS on OFFERS.car_id=CARS.id) as OFFER_CAR LEFT JOIN USERS ON 
 select count(*) from DRIVES where offer_id='7f822953-9c1c-430a-9b57-37edbacccabf'
 SELECT seats from OFFERS inner JOIN CARS on OFFERS.car_id=CARS.id where OFFERS.id='7f822953-9c1c-430a-9b57-37edbacccabf';
 
+SELECT DRIVES.id as drive_id, DRIVES.passenger_id as passenger_id, DRIVES.offer_id, OFFERS.user_id as driver_id, drive_date FROM
+DRIVES LEFT JOIN OFFERS on DRIVES.offer_id = OFFERS.id where drive_date < 1641740139000 and passenger_id = '8379dbb2-fdc0-4fb8-8a51-7f9859b4c4ca';
+
 # TABLES
 Create table USERS
 (
@@ -63,4 +66,17 @@ create table DRIVES
     reservation_date bigint,
     FOREIGN KEY (offer_id) REFERENCES OFFERS(id),
     FOREIGN KEY (passenger_id) REFERENCES USERS(id)
+)
+
+create table REVIEWS
+(
+    id varchar(50) primary key,
+    from_user_id varchar(50),
+    to_user_id varchar(50),
+    drive_id varchar(50),
+    review_date bigint,
+    review_grade int,
+    foreign key (from_user_id) references USERS(id),
+    foreign key (to_user_id) references USERS(id),
+    foreign key (drive_id) references DRIVES(id)
 )

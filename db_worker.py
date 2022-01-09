@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, Union
 from sqlalchemy import select, and_
 from sqlalchemy.orm import sessionmaker
-from data_classes import User, Car, Offer, Drive
+from data_classes import User, Car, Offer, Drive, Review
 
 
 class DBWorker(object):
@@ -246,6 +246,58 @@ class DBWorker(object):
             return_val = new_id
         except Exception as e:
             print(f"New drive addition for passenger {passenger_id} and offer {offer_id} failed with error: {e}")
+            return_message = f'error: {e}'
+        finally:
+            return return_val, return_message
+
+    def get_past_drives_for_user(self, user_id: str):
+        return_val = None
+        current_ts = int(datetime.timestamp(datetime.now()) * 1000)
+        try:
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            query = "SELECT DRIVES.id as drive_id, DRIVES.passenger_id, DRIVES.offer_id, OFFERS.user_id as driver_id, drive_date " \
+                    f"FROM DRIVES LEFT JOIN OFFERS on DRIVES.offer_id = OFFERS.id where drive_date < {current_ts} and passenger_id = '{user_id}'"
+            rows = session.execute(query)
+            no_rows = rows.rowcount
+            if no_rows > 0:
+                rez_df = pd.DataFrame.from_records(rows, columns=rows.keys())
+            else:
+                rez_df = pd.DataFrame()
+            return_val = rez_df
+        except Exception as e:
+            print(f"Getting past drives for specified requirements failed with error {e}")
+        finally:
+            return return_val
+    # endregion
+
+    # region Review
+    def add_new_review(self, review_args: Dict[str, Union[str, int]]):
+        return_val = None
+        return_message = 'success'
+        try:
+            new_id = str(uuid4())
+            new_review = Review()
+            new_review.id = new_id
+            new_review.from_user_id = review_args.get('user_id')
+            new_review.to_user_id = review_args.get('driver_id')
+            new_review.drive_id = review_args.get('drive_id')
+            new_review.review_date = int(datetime.timestamp(datetime.now()) * 1000)
+            new_review.review_grade = review_args.get('review_grade')
+
+            engine = sql.create_engine(self.connection_str)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            session.add(new_review)
+            session.commit()
+
+            session.close()
+            return_val = new_id
+        except Exception as e:
+            print(f"New review addition for from passenger {review_args.get('user_id')} failed with error: {e}")
             return_message = f'error: {e}'
         finally:
             return return_val, return_message
