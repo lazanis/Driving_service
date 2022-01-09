@@ -13,7 +13,7 @@ def register(request: Request):
     ret_val = db_worker.check_if_user_exists_by_username(request_args.get('username'))
 
     if ret_val is not None:
-        ret_dict['unique_id'] = ret_val
+        ret_dict['unique_id'] = -1
         ret_dict['message'] = 'User with desired username already existing'
     else:
         ret_val, return_message = db_worker.write_new_user(request_args)
