@@ -5,6 +5,16 @@ https://stackoverflow.com/questions/11530196/flask-sqlalchemy-query-specify-colu
 https://www.kite.com/python/answers/how-to-encrypt-a-password-in-python?fbclid=IwAR0YIO1iDpm8dLprJtOEInVOCVxaKoceLBOEHhxa9-OOEXeJy3RM3N2U0No - password encode
 https://stackoverflow.com/questions/17325006/how-to-create-a-foreignkey-reference-with-sqlalchemy - foreign keys
 https://chartio.com/resources/tutorials/how-to-execute-raw-sql-in-sqlalchemy/?fbclid=IwAR1_fE_SBEsNcViThe6ts-hcWhWNmLvfaBbSDikHUz31de2Et2VhqAYwBws - raw sql in sqlalchemy
+https://linuxize.com/post/creating-a-self-signed-ssl-certificate/ - create self signed certificate
+https://fastapi.tiangolo.com/deployment/https/?fbclid=IwAR3Oe07S2Mu2LDcfK8hfDC9aWyOaPpKKahTctxP8fcYyk6-uDnZwKhNqGSc - about ssl
+
+SSL steps:
+1. openssl req -newkey rsa:4096 -x509 -sha256 -days 1 -nodes -out example.crt -keyout example.key
+2. openssl x509 -in example.crt -out cert.pem -outform PEM
+3. In order to validate certificate for requests library on the interface side, it is required to copy the cert.pem file to the interface and to validate requests with specific file.
+   This is due to fact that self signed certificate is not validated by CA (Central Authority), thus it has to be "manually" added
+
+
 
 # QUERIES
 SELECT name, surname, type, seats FROM
