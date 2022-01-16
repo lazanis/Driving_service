@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+    driving-service-image:
+        build: ./Driving_service
+        network_mode: "host"
+        volumes:
+            - ./Driving_service:/usr/src/app
+            
+    driving-service-interface-image:
+        build: ./Driving_service_interface
+        network_mode: "host"
+        volumes:
+            - ./Driving_service_interface:/usr/src/app
+        depends_on:
+            - driving-service-image
+        stdin_open: true
+        tty: true

@@ -13,3 +13,7 @@ DOCKER:
 6. (sudo) docker stop CONTAINER_ID
 7. (sudo) docker system prune
 
+DOCKER-COMPOSE:
+1. move docker-compose.yml file to a folder above Driving_service and Driving_service_interface
+2. (sudo) docker-compose run driving-service-interface-image -> for enabling interactive mode for driving-service-interface
+
