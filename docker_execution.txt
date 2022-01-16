@@ -1,0 +1,15 @@
+BEFORE:
+remove pkg_resources==0.0.0 from requirements.txt
+sudo chmod -R 755 /var/lib/mysql/
+***change uvicorn app host and dbworker address from 'localhost' to '127.0.0.1'
+
+DOCKER:
+1. maker Dockerfile
+2. (sudo) docker image build -t NAME(driver-service-image) .
+3. (sudo) docker image ls -> list all images
+4. (sudo) docker container ls -> list all containers
+# 5. (sudo) docker run --network="host" -p 7777:7777 NAME(driver-service-image) -> first port is host, second port is inside container (actual app port)
+5. (sudo) docker run --network="host" NAME(driver-service-image)
+6. (sudo) docker stop CONTAINER_ID
+7. (sudo) docker system prune
+
