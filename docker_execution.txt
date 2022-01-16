@@ -5,11 +5,11 @@ sudo chmod -R 755 /var/lib/mysql/
 
 DOCKER:
 1. maker Dockerfile
-2. (sudo) docker image build -t NAME(driver-service-image) .
+2. (sudo) docker image build -t NAME(driving-service-image) .
 3. (sudo) docker image ls -> list all images
 4. (sudo) docker container ls -> list all containers
-# 5. (sudo) docker run --network="host" -p 7777:7777 NAME(driver-service-image) -> first port is host, second port is inside container (actual app port)
-5. (sudo) docker run --network="host" NAME(driver-service-image)
+# 5. (sudo) docker run --network="host" -p 7777:7777 NAME(driving-service-image) -> first port is host, second port is inside container (actual app port)
+5. (sudo) docker run --network="host" NAME(driving-service-image)
 6. (sudo) docker stop CONTAINER_ID
 7. (sudo) docker system prune
 
