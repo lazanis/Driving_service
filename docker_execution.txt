@@ -4,7 +4,7 @@ sudo chmod -R 755 /var/lib/mysql/
 ***change uvicorn app host and dbworker address from 'localhost' to '127.0.0.1'
 
 DOCKER:
-1. maker Dockerfile
+1. make Dockerfile
 2. (sudo) docker image build -t NAME(driving-service-image) .
 3. (sudo) docker image ls -> list all images
 4. (sudo) docker container ls -> list all containers
