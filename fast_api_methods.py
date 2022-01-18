@@ -2,7 +2,7 @@ from db_worker import DBWorker
 from fastapi import FastAPI, Request
 
 app = FastAPI()
-db_worker = DBWorker(address="192.168.1.5")
+db_worker = DBWorker()
 
 
 @app.post("/register")
