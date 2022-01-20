@@ -33,6 +33,13 @@ SELECT seats from OFFERS inner JOIN CARS on OFFERS.car_id=CARS.id where OFFERS.i
 SELECT DRIVES.id as drive_id, DRIVES.passenger_id as passenger_id, DRIVES.offer_id, OFFERS.user_id as driver_id, drive_date FROM
 DRIVES LEFT JOIN OFFERS on DRIVES.offer_id = OFFERS.id where drive_date < 1641740139000 and passenger_id = '8379dbb2-fdc0-4fb8-8a51-7f9859b4c4ca';
 
+SELECT drive_from, drive_to, drive_date, name, surname, type FROM
+(SELECT drive_from, drive_to, drive_date, car_id, name, surname FROM
+(SELECT drive_from, drive_to, drive_date, car_id, user_id FROM
+DRIVES LEFT JOIN OFFERS ON DRIVES.offer_id=OFFERS.id
+WHERE passenger_id="8379dbb2-fdc0-4fb8-8a51-7f9859b4c4ca") as main_table LEFT JOIN USERS ON main_table.user_id=USERS.id) as middle_table LEFT JOIN CARS ON
+middle_table.car_id=CARS.id
+
 # TABLES
 Create table USERS
 (
